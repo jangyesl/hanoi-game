@@ -140,12 +140,15 @@
       fromTower = null;
     }
 
-    // 모든 원반이 3번 기둥에 쌓였는지 확인
-    function checkWin() {
-      if (towers.c.childElementCount === numDisks) {
-        alert("🎉 You're a genius. 하노이 정복 완료!");
-      }
-    }
+    // 모든 원반이 3번 기둥에 쌓이면 
+   function checkWin() {
+  const towerC = towers.c;
+  const disksInC = towerC.querySelectorAll('.disk').length;
+
+  if (disksInC === numDisks) {
+    alert("You're a genius. ");
+  }
+}
   </script>
 </body>
 </html>
