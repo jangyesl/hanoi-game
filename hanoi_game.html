@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>하노이의 탑 게임</title>
+
+  <style>
+    body {
+      text-align: center; /* 글씨 가운데 정렬 */
+      margin-top: 50px;   /* 위쪽 여백 */
+    }
+
+    .tower-container {
+      display: flex;              /* 가로 정렬 */
+      justify-content: center;     /* 가운데 정렬 */
+      align-items: flex-end;      /* 아래 정렬 */
+      gap: 30px;                  /* 기둥 사이 간격 */
+      margin-bottom: 10px;         /* 기둥과 이름 사이 여백 */
+    }
+
+    .tower-group {
+      display: flex;                 /* 기둥과 이름 세로 정렬 */
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .tower {
+      width: 120px;               /* 기둥 너비 */
+      height: 250px;              /* 기둥 높이 */
+      border: 2px solid #aaa;     /* 테두리 색 */
+      display: flex;                /* 내부 원반 정렬을 위해 flex 사용 */
+      flex-direction: column-reverse; /* 아래에서 위로 정렬 */
+      align-items: center;        /* 가운데 정렬 */
+      padding-bottom: 10px;       /* 아래 여백 */
+    }
+
+    /* 기둥 개별 색상 지정 */
+    #a {
+      background-color: #ff4d4d; /* 1번 기둥 */
+    }
+    #b {
+      background-color: #ffd700; /* 2번 기둥  */
+    }
+    #c {
+      background-color: #4da6ff; /* 3번 기둥 */
+    }
+
+    .tower-name {
+      margin-top: 8px;           /* 기둥과 이름 사이 여백 */
+      
+    }
+
+    .disk {
+      height: 20px;              /* 원반 높이 */
+      background-color: teal;    /* 원반 기본 색 */
+      margin: 3px 0;             /* 위아래 여백 */
+      border-radius: 5px;        /* 둥근 모서리 */
+      cursor: pointer;           /* 마우스 올릴 때 포인터 표시 */
+    }
+  </style>
+</head>
+<body>
+  <h1>하노이의 탑 게임 기억나시냐</h1>
+  <p>원반을 모두 오른쪽 기둥으로 옮겨보세요.<br>
+     박스 클릭 후 옮길 기둥 클릭  </p>
+
+  <!-- 기둥 + 이름 묶는거!!! 하나 더 만들면 두개생김  -->
+
+  <div class="tower-container">
+    <div class="tower-group">
+
+      <div class="tower" id="a"></div>           <!-- 첫 번째 기둥 생성 -->
+      <div class="tower-name">1번 기둥에서</div>     <!-- 기둥 아래 텍스트 나타냄-->
+    </div>
+    <div class="tower-group">
+      <div class="tower" id="b"></div>          
+      <div class="tower-name">-></div>
+    </div>
+    <div class="tower-group">
+      <div class="tower" id="c"></div>          
+      <div class="tower-name"> 여기로 옮겨</div>
+    </div>
+  </div>
+
+  <script>
+    const numDisks = 4; // 원반 개수
+
+    // 각 기둥 요소 가져오기
+    const towers = {
+      a: document.getElementById('a'),
+      b: document.getElementById('b'),
+      c: document.getElementById('c')
+    };
+
+    let selectedDisk = null; // 선택된 원반 저장용
+    let fromTower = null;    // 선택된 원반의 출발 기둥 저장용
+
+    // 시작 시 왼쪽 기둥에 원반 4개 생성
+    for (let i = numDisks; i >= 1; i--) {
+      const disk = document.createElement('div');   // <div> 요소 생성
+      disk.className = 'disk';                      // 클래스 부여
+      disk.style.width = `${i * 25}px`;             // 원반 너비 크기 설정
+      disk.dataset.size = i;                        // 크기 정보를 dataset에 저장
+      towers.a.appendChild(disk);                   // 1번 기둥에 추가
+    }
+
+    // 각 기둥 클릭 시 이벤트 연결
+    Object.keys(towers).forEach(towerId => {
+      towers[towerId].addEventListener('click', () => handleTowerClick(towerId));
+    });
+
+    // 클릭 로직: 처음 클릭은 선택, 두 번째 클릭은 이동 시도
+    function handleTowerClick(towerId) {
+      const tower = towers[towerId];              // 클릭한 기둥
+      const topDisk = tower.lastElementChild;     // 가장 위에 있는 원반
+
+      if (!selectedDisk) {
+        // 아직 선택 안 했을 때
+        if (!topDisk) return;                     // 비어 있으면 무시
+        selectedDisk = topDisk;                   // 선택 저장
+        fromTower = tower;                        // 출발 기둥 저장
+        selectedDisk.style.backgroundColor = 'orange'; // 선택 시 색 변경
+      } else {
+        // 이미 선택된 상태에서 두 번째 클릭
+        if (topDisk && Number(topDisk.dataset.size) < Number(selectedDisk.dataset.size)) {
+          alert("하노이 몰라? 큰 원반을 작은 원반 위에 놓을 수 없음!"); // 규칙 위반 경고
+          resetSelection(); // 선택 해제
+          return;
+        }
+        tower.appendChild(selectedDisk); // 이동 실행
+        resetSelection();                // 선택 해제
+        checkWin();                      // 승리 여부 확인
+      }
+    }
+
+    // 선택 초기화 함수
+    function resetSelection() {
+      if (selectedDisk) selectedDisk.style.backgroundColor = 'teal'; // 원래 색상 복원
+      selectedDisk = null;
+      fromTower = null;
+    }
+
+    // 모든 원반이 3번 기둥에 쌓였는지 확인
+    function checkWin() {
+      if (towers.c.childElementCount === numDisks) {
+        alert("🎉 You're a genius. 하노이 정복 완료!");
+      }
+    }
+  </script>
+</body>
+</html>
